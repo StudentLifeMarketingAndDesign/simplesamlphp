@@ -8,7 +8,7 @@
  * @author Danny Bollaert, UGent.
  * @package simpleSAMLphp
  */
-class sspmod_cas_Auth_Source_CAS  extends SimpleSAML_Auth_Source  {
+class sspmod_cas_Auth_Source_CAS extends SimpleSAML_Auth_Source {
 
 	/**
 	 * The string used to identify our states.
@@ -19,7 +19,6 @@ class sspmod_cas_Auth_Source_CAS  extends SimpleSAML_Auth_Source  {
 	 * The key of the AuthId field in the state.
 	 */
 	const AUTHID = 'sspmod_cas_Auth_Source_CAS.AuthId';
-
 
 	/**
 	 * @var array with ldap configuration
@@ -40,7 +39,6 @@ class sspmod_cas_Auth_Source_CAS  extends SimpleSAML_Auth_Source  {
 	 */
 	private $_loginMethod;
 
-
 	/**
 	 * Constructor for this authentication source.
 	 *
@@ -54,32 +52,31 @@ class sspmod_cas_Auth_Source_CAS  extends SimpleSAML_Auth_Source  {
 		/* Call the parent constructor first, as required by the interface. */
 		parent::__construct($info, $config);
 
-		if (!array_key_exists('cas', $config)){
+		if (!array_key_exists('cas', $config)) {
 			throw new Exception('cas authentication source is not properly configured: missing [cas]');
 		}
 
-		if (!array_key_exists('ldap', $config)){
+		if (!array_key_exists('ldap', $config)) {
 			throw new Exception('ldap authentication source is not properly configured: missing [ldap]');
 		}
 
 		$this->_casConfig = $config['cas'];
 		$this->_ldapConfig = $config['ldap'];
 
-		if(isset($this->_casConfig['serviceValidate'])){
+		if (isset($this->_casConfig['serviceValidate'])) {
 			$this->_validationMethod = 'serviceValidate';
-		}elseif(isset($this->_casConfig['validate'])){
+		} elseif (isset($this->_casConfig['validate'])) {
 			$this->_validationMethod = 'validate';
-		}else{
+		} else {
 			throw new Exception("validate or serviceValidate not specified");
 		}
 
-		if(isset($this->_casConfig['login'])){
-			$this->_loginMethod =  $this->_casConfig['login'];
-		}else{
+		if (isset($this->_casConfig['login'])) {
+			$this->_loginMethod = $this->_casConfig['login'];
+		} else {
 			throw new Exception("cas login URL not specified");
 		}
 	}
-
 
 	/**
 	 * This the most simple version of validating, this provides only authentication validation
@@ -88,21 +85,22 @@ class sspmod_cas_Auth_Source_CAS  extends SimpleSAML_Auth_Source  {
 	 * @param string $service
 	 * @return list username and attributes
 	 */
-	private function casValidate($ticket, $service){
+	private function casValidate($ticket, $service) {
+		echo "validating simply";
 		$url = SimpleSAML_Utilities::addURLparameter($this->_casConfig['validate'], array(
-				'ticket' => $ticket,
-				'service' => $service,
+			'uip_ticket' => $ticket,
+			'service' => $service,
 		));
 		$result = SimpleSAML_Utilities::fetch($url);
-		$res = preg_split("/\r?\n/",$result);
-
-		if (strcmp($res[0], "yes") == 0) {
-			return array($res[1], array());
+		$res = preg_split("/\r?\n/", $result);
+		if (strlen(strstr($res[0], "hawkid")) > 0) {
+			$attributes['hawkid'][0] = str_replace('hawkid=', '', $res[0]);
+			//if (strcmp($res[0], "hawkid")) {
+			return array($res[0], $attributes);
 		} else {
 			throw new Exception("Failed to validate CAS service ticket: $ticket");
 		}
 	}
-
 
 	/**
 	 * Uses the cas service validate, this provides additional attributes
@@ -111,10 +109,11 @@ class sspmod_cas_Auth_Source_CAS  extends SimpleSAML_Auth_Source  {
 	 * @param string $service
 	 * @return list username and attributes
 	 */
-	private function casServiceValidate($ticket, $service){
+	private function casServiceValidate($ticket, $service) {
+		echo "validating as service";
 		$url = SimpleSAML_Utilities::addURLparameter($this->_casConfig['serviceValidate'], array(
-				'ticket' => $ticket,
-				'service' => $service,
+			'uip_ticket' => $ticket,
+			'service' => $service,
 		));
 		$result = SimpleSAML_Utilities::fetch($url);
 
@@ -128,19 +127,22 @@ class sspmod_cas_Auth_Source_CAS  extends SimpleSAML_Auth_Source  {
 		} else {
 
 			$attributes = array();
-			if ($casattributes = $this->_casConfig['attributes']) { # some has attributes in the xml - attributes is a list of XPath expressions to get them
+			if ($casattributes = $this->_casConfig['attributes']) {
+				# some has attributes in the xml - attributes is a list of XPath expressions to get them
 				foreach ($casattributes as $name => $query) {
 					$attrs = $xPath->query($query);
-					foreach ($attrs as $attrvalue) $attributes[$name][] = $attrvalue->textContent;
+					foreach ($attrs as $attrvalue) {
+						$attributes[$name][] = $attrvalue->textContent;
+					}
 				}
 			}
+
 			$casusername = $success->item(0)->textContent;
 
 			return array($casusername, $attributes);
 
 		}
 	}
-
 
 	/**
 	 * Main validation method, redirects to correct method
@@ -150,10 +152,10 @@ class sspmod_cas_Auth_Source_CAS  extends SimpleSAML_Auth_Source  {
 	 * @param string $service
 	 * @return list username and attributes
 	 */
-	protected function casValidation($ticket, $service){
-		switch($this->_validationMethod){
+	protected function casValidation($ticket, $service) {
+		switch ($this->_validationMethod) {
 			case 'validate':
-				return  $this->casValidate($ticket, $service);
+				return $this->casValidate($ticket, $service);
 				break;
 			case 'serviceValidate':
 				return $this->casServiceValidate($ticket, $service);
@@ -163,7 +165,6 @@ class sspmod_cas_Auth_Source_CAS  extends SimpleSAML_Auth_Source  {
 		}
 	}
 
-
 	/**
 	 * Called by linkback, to finish validate/ finish logging in.
 	 * @param state $state
@@ -171,10 +172,9 @@ class sspmod_cas_Auth_Source_CAS  extends SimpleSAML_Auth_Source  {
 	 */
 	public function finalStep(&$state) {
 
-
 		$ticket = $state['cas:ticket'];
 		$stateID = SimpleSAML_Auth_State::saveState($state, self::STAGE_INIT);
-		$service =  SimpleSAML_Module::getModuleURL('cas/linkback.php', array('stateID' => $stateID));
+		$service = SimpleSAML_Module::getModuleURL('cas/linkback.php', array('stateID' => $stateID));
 		list($username, $casattributes) = $this->casValidation($ticket, $service);
 		$ldapattributes = array();
 		if ($this->_ldapConfig['servers']) {
@@ -186,7 +186,6 @@ class sspmod_cas_Auth_Source_CAS  extends SimpleSAML_Auth_Source  {
 
 		SimpleSAML_Auth_Source::completeAuth($state);
 	}
-
 
 	/**
 	 * Log-in using cas
@@ -201,14 +200,11 @@ class sspmod_cas_Auth_Source_CAS  extends SimpleSAML_Auth_Source  {
 
 		$stateID = SimpleSAML_Auth_State::saveState($state, self::STAGE_INIT);
 
-
-
 		$serviceUrl = SimpleSAML_Module::getModuleURL('cas/linkback.php', array('stateID' => $stateID));
 
 		SimpleSAML_Utilities::redirectTrustedURL($this->_loginMethod, array(
 			'service' => $serviceUrl));
 	}
-
 
 	/**
 	 * Log out from this authentication source.
