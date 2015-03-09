@@ -1,4 +1,4 @@
-<?php 
+<?php
 
 /**
  * Helper class for accessing information about modules.
@@ -7,7 +7,6 @@
  * @package simpleSAMLphp
  */
 class SimpleSAML_Module {
-
 
 	/**
 	 * Retrieve the base directory for a module.
@@ -24,7 +23,6 @@ class SimpleSAML_Module {
 		return $moduleDir;
 	}
 
-
 	/**
 	 * Determine whether a module is enabled.
 	 *
@@ -37,15 +35,15 @@ class SimpleSAML_Module {
 
 		$moduleDir = self::getModuleDir($module);
 
-		if(!is_dir($moduleDir)) {
+		if (!is_dir($moduleDir)) {
 			return FALSE;
 		}
 
 		$globalConfig = SimpleSAML_Configuration::getInstance();
 		$moduleEnable = $globalConfig->getArray('module.enable', array());
 
-		if(isset($moduleEnable[$module])) {
-			if(is_bool($moduleEnable[$module]) === TRUE) {
+		if (isset($moduleEnable[$module])) {
+			if (is_bool($moduleEnable[$module]) === TRUE) {
 				return $moduleEnable[$module];
 			}
 
@@ -56,17 +54,16 @@ class SimpleSAML_Module {
 			SimpleSAML_Logger::error("Missing default-enable or default-disable file for the module $module");
 		}
 
-		if(file_exists($moduleDir . '/enable')) {
+		if (file_exists($moduleDir . '/enable')) {
 			return TRUE;
 		}
 
-		if(!file_exists($moduleDir . '/disable') && file_exists($moduleDir . '/default-enable')) {
+		if (!file_exists($moduleDir . '/disable') && file_exists($moduleDir . '/default-enable')) {
 			return TRUE;
 		}
 
 		return FALSE;
 	}
-
 
 	/**
 	 * Get available modules.
@@ -78,18 +75,18 @@ class SimpleSAML_Module {
 		$path = self::getModuleDir('.');
 
 		$dh = opendir($path);
-		if($dh === FALSE) {
+		if ($dh === FALSE) {
 			throw new Exception('Unable to open module directory "' . $path . '".');
 		}
 
 		$modules = array();
 
-		while( ($f = readdir($dh)) !== FALSE) {
-			if($f[0] === '.') {
+		while (($f = readdir($dh)) !== FALSE) {
+			if ($f[0] === '.') {
 				continue;
 			}
 
-			if(!is_dir($path . '/' . $f)) {
+			if (!is_dir($path . '/' . $f)) {
 				continue;
 			}
 
@@ -100,7 +97,6 @@ class SimpleSAML_Module {
 
 		return $modules;
 	}
-
 
 	/**
 	 * Resolve module class.
@@ -141,7 +137,6 @@ class SimpleSAML_Module {
 		return $className;
 	}
 
-
 	/**
 	 * Get absolute URL to a specified module resource.
 	 *
@@ -161,7 +156,6 @@ class SimpleSAML_Module {
 		}
 		return $url;
 	}
-
 
 	/**
 	 * Call a hook in all enabled modules.
@@ -186,7 +180,7 @@ class SimpleSAML_Module {
 				continue;
 			}
 
-			require_once($hookfile);
+			require_once $hookfile;
 
 			$hookfunc = $module . '_hook_' . $hook;
 			assert('is_callable($hookfunc)');

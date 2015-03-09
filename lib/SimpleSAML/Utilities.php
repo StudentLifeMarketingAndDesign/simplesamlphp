@@ -17,7 +17,6 @@ class SimpleSAML_Utilities {
 	 */
 	private static $logLevelStack = array();
 
-
 	/**
 	 * The current mask of disabled log levels.
 	 *
@@ -27,7 +26,6 @@ class SimpleSAML_Utilities {
 	 */
 	public static $logMask = 0;
 
-
 	/**
 	 * Will return sp.example.org
 	 */
@@ -35,13 +33,13 @@ class SimpleSAML_Utilities {
 
 		$url = self::getBaseURL();
 
-		$start = strpos($url,'://') + 3;
-		$length = strcspn($url,'/:',$start);
+		$start = strpos($url, '://') + 3;
+		$length = strcspn($url, '/:', $start);
 
 		return substr($url, $start, $length);
 
 	}
-	
+
 	/**
 	 * Retrieve Host value from $_SERVER environment variables
 	 */
@@ -56,18 +54,17 @@ class SimpleSAML_Utilities {
 			$currenthost = 'localhost';
 		}
 
-		if(strstr($currenthost, ":")) {
-				$currenthostdecomposed = explode(":", $currenthost);
-				$port = array_pop($currenthostdecomposed);
-				if (!is_numeric($port)) {
-					array_push($currenthostdecomposed, $port);
-                }
-                $currenthost = implode($currenthostdecomposed, ":");
+		if (strstr($currenthost, ":")) {
+			$currenthostdecomposed = explode(":", $currenthost);
+			$port = array_pop($currenthostdecomposed);
+			if (!is_numeric($port)) {
+				array_push($currenthostdecomposed, $port);
+			}
+			$currenthost = implode($currenthostdecomposed, ":");
 		}
 		return $currenthost;
 
 	}
-
 
 	/**
 	 * Will return https://sp.example.org[:PORT]
@@ -76,13 +73,12 @@ class SimpleSAML_Utilities {
 
 		$url = self::getBaseURL();
 
-		$start = strpos($url,'://') + 3;
-		$length = strcspn($url,'/',$start) + $start;
+		$start = strpos($url, '://') + 3;
+		$length = strcspn($url, '/', $start) + $start;
 
 		return substr($url, 0, $length);
 	}
 
-	
 	/**
 	 * This function checks if we should set a secure cookie.
 	 *
@@ -92,7 +88,7 @@ class SimpleSAML_Utilities {
 
 		$url = self::getBaseURL();
 
-		$end = strpos($url,'://');
+		$end = strpos($url, '://');
 		$protocol = substr($url, 0, $end);
 
 		if ($protocol === 'https') {
@@ -108,12 +104,12 @@ class SimpleSAML_Utilities {
 	 */
 	private static function getServerHTTPS() {
 
-		if(!array_key_exists('HTTPS', $_SERVER)) {
+		if (!array_key_exists('HTTPS', $_SERVER)) {
 			/* Not an https-request. */
 			return FALSE;
 		}
 
-		if($_SERVER['HTTPS'] === 'off') {
+		if ($_SERVER['HTTPS'] === 'off') {
 			/* IIS with HTTPS off. */
 			return FALSE;
 		}
@@ -122,7 +118,6 @@ class SimpleSAML_Utilities {
 		return $_SERVER['HTTPS'] !== '';
 
 	}
-
 
 	/**
 	 * Retrieve port number from $_SERVER environment variables
@@ -139,9 +134,15 @@ class SimpleSAML_Utilities {
 		$port = ':' . $portnumber;
 
 		if (self::getServerHTTPS()) {
-			if ($portnumber == '443') $port = '';
+			if ($portnumber == '443') {
+				$port = '';
+			}
+
 		} else {
-			if ($portnumber == '80') $port = '';
+			if ($portnumber == '80') {
+				$port = '';
+			}
+
 		}
 
 		return $port;
@@ -152,16 +153,15 @@ class SimpleSAML_Utilities {
 	 * Will return https://sp.example.org/universities/ruc/baz/simplesaml/saml2/SSOService.php
 	 */
 	public static function selfURLNoQuery() {
-	
+
 		$selfURLhost = self::selfURLhost();
 		$selfURLhost .= $_SERVER['SCRIPT_NAME'];
 		if (isset($_SERVER['PATH_INFO'])) {
 			$selfURLhost .= $_SERVER['PATH_INFO'];
 		}
 		return $selfURLhost;
-	
-	}
 
+	}
 
 	/**
 	 * Will return sp.example.org/ssp/sp1
@@ -170,25 +170,24 @@ class SimpleSAML_Utilities {
 	 * SP, as defined in the global configuration.
 	 */
 	public static function getSelfHostWithPath() {
-	
+
 		$baseurl = explode("/", self::getBaseURL());
 		$elements = array_slice($baseurl, 3 - count($baseurl), count($baseurl) - 4);
 		$path = implode("/", $elements);
 		$selfhostwithpath = self::getSelfHost();
 		return $selfhostwithpath . "/" . $path;
 	}
-	
+
 	/**
 	 * Will return foo
 	 */
 	public static function getFirstPathElement($trailingslash = true) {
-	
+
 		if (preg_match('|^/(.*?)/|', $_SERVER['SCRIPT_NAME'], $matches)) {
 			return ($trailingslash ? '/' : '') . $matches[1];
 		}
 		return '';
 	}
-	
 
 	public static function selfURL() {
 
@@ -206,7 +205,6 @@ class SimpleSAML_Utilities {
 
 	}
 
-
 	/**
 	 * Retrieve and return the absolute base URL for the simpleSAMLphp installation.
 	 *
@@ -220,7 +218,7 @@ class SimpleSAML_Utilities {
 
 		$globalConfig = SimpleSAML_Configuration::getInstance();
 		$baseURL = $globalConfig->getString('baseurlpath', 'simplesaml/');
-		
+
 		if (preg_match('#^https?://.*/$#D', $baseURL, $matches)) {
 			/* full URL in baseurlpath, override local server values */
 			return $baseURL;
@@ -240,16 +238,15 @@ class SimpleSAML_Utilities {
 			$port = self::getServerPort();
 			$path = '/' . $globalConfig->getBaseURL();
 
-			return $protocol.$hostname.$port.$path;
+			return $protocol . $hostname . $port . $path;
 		} else {
-			throw new SimpleSAML_Error_Exception('Invalid value of \'baseurl\' in '.
-				'config.php. Valid format is in the form: '.
-				'[(http|https)://(hostname|fqdn)[:port]]/[path/to/simplesaml/]. '.
+			throw new SimpleSAML_Error_Exception('Invalid value of \'baseurl\' in ' .
+				'config.php. Valid format is in the form: ' .
+				'[(http|https)://(hostname|fqdn)[:port]]/[path/to/simplesaml/]. ' .
 				'It must end with a \'/\'.');
 		}
 
 	}
-
 
 	/**
 	 * Add one or more query parameters to the given URL.
@@ -264,12 +261,12 @@ class SimpleSAML_Utilities {
 	public static function addURLparameter($url, $parameter) {
 
 		/* For backwards compatibility - allow $parameter to be a string. */
-		if(is_string($parameter)) {
+		if (is_string($parameter)) {
 			/* Print warning to log. */
 			$backtrace = debug_backtrace();
 			$where = $backtrace[0]['file'] . ':' . $backtrace[0]['line'];
 			SimpleSAML_Logger::warning(
-				'Deprecated use of SimpleSAML_Utilities::addURLparameter at ' .	$where .
+				'Deprecated use of SimpleSAML_Utilities::addURLparameter at ' . $where .
 				'. The parameter "$parameter" should now be an array, but a string was passed.');
 
 			$parameter = self::parseQueryString($parameter);
@@ -277,12 +274,12 @@ class SimpleSAML_Utilities {
 		assert('is_array($parameter)');
 
 		$queryStart = strpos($url, '?');
-		if($queryStart === FALSE) {
+		if ($queryStart === FALSE) {
 			$oldQuery = array();
 			$url .= '?';
 		} else {
 			$oldQuery = substr($url, $queryStart + 1);
-			if($oldQuery === FALSE) {
+			if ($oldQuery === FALSE) {
 				$oldQuery = array();
 			} else {
 				$oldQuery = self::parseQueryString($oldQuery);
@@ -295,7 +292,6 @@ class SimpleSAML_Utilities {
 
 		return $url;
 	}
-
 
 	/**
 	 * Check if a URL is valid and is in our list of allowed URLs.
@@ -334,12 +330,11 @@ class SimpleSAML_Utilities {
 
 			/* Throw exception due to redirection to untrusted site */
 			if (!in_array($hostname, $trustedSites)) {
-				throw new SimpleSAML_Error_Exception('URL not allowed: '.$url);
+				throw new SimpleSAML_Error_Exception('URL not allowed: ' . $url);
 			}
 		}
 		return $url;
 	}
-
 
 	/**
 	 * Get the ID and (optionally) a URL embedded in a StateID,
@@ -361,10 +356,9 @@ class SimpleSAML_Utilities {
 		return array('id' => $id, 'url' => $url);
 	}
 
-
-	public static function checkDateConditions($start=NULL, $end=NULL) {
+	public static function checkDateConditions($start = NULL, $end = NULL) {
 		$currentTime = time();
-	
+
 		if (!empty($start)) {
 			$startTime = SAML2_Utils::xsDateTimeToTimestamp($start);
 			/* Allow for a 10 minute difference in Time */
@@ -381,11 +375,9 @@ class SimpleSAML_Utilities {
 		return TRUE;
 	}
 
-
 	public static function generateID() {
 		return '_' . self::stringToHex(self::generateRandomBytes(21));
 	}
-	
 
 	/**
 	 * This function generates a timestamp on the form used by the SAML protocols.
@@ -394,12 +386,11 @@ class SimpleSAML_Utilities {
 	 * @return The timestamp.
 	 */
 	public static function generateTimestamp($instant = NULL) {
-		if($instant === NULL) {
+		if ($instant === NULL) {
 			$instant = time();
 		}
 		return gmdate('Y-m-d\TH:i:s\Z', $instant);
 	}
-
 
 	/**
 	 * Interpret a ISO8601 duration value relative to a given timestamp.
@@ -419,13 +410,13 @@ class SimpleSAML_Utilities {
 			throw new Exception('Invalid ISO 8601 duration: ' . $duration);
 		}
 
-		$durYears = (empty($matches[2]) ? 0 : (int)$matches[2]);
-		$durMonths = (empty($matches[3]) ? 0 : (int)$matches[3]);
-		$durDays = (empty($matches[4]) ? 0 : (int)$matches[4]);
-		$durHours = (empty($matches[5]) ? 0 : (int)$matches[5]);
-		$durMinutes = (empty($matches[6]) ? 0 : (int)$matches[6]);
-		$durSeconds = (empty($matches[7]) ? 0 : (int)$matches[7]);
-		$durWeeks = (empty($matches[8]) ? 0 : (int)$matches[8]);
+		$durYears = (empty($matches[2]) ? 0 : (int) $matches[2]);
+		$durMonths = (empty($matches[3]) ? 0 : (int) $matches[3]);
+		$durDays = (empty($matches[4]) ? 0 : (int) $matches[4]);
+		$durHours = (empty($matches[5]) ? 0 : (int) $matches[5]);
+		$durMinutes = (empty($matches[6]) ? 0 : (int) $matches[6]);
+		$durSeconds = (empty($matches[7]) ? 0 : (int) $matches[7]);
+		$durWeeks = (empty($matches[8]) ? 0 : (int) $matches[8]);
 
 		if (!empty($matches[1])) {
 			/* Negative */
@@ -451,8 +442,8 @@ class SimpleSAML_Utilities {
 			 * gmtime function. Instead we use the gmdate function, and split the result.
 			 */
 			$yearmonth = explode(':', gmdate('Y:n', $timestamp));
-			$year = (int)($yearmonth[0]);
-			$month = (int)($yearmonth[1]);
+			$year = (int) ($yearmonth[0]);
+			$month = (int) ($yearmonth[1]);
 
 			/* Remove the year and month from the timestamp. */
 			$timestamp -= gmmktime(0, 0, 0, $month, 1, $year);
@@ -483,7 +474,6 @@ class SimpleSAML_Utilities {
 		return $timestamp;
 	}
 
-
 	/**
 	 * Show and log fatal error message.
 	 *
@@ -504,13 +494,15 @@ class SimpleSAML_Utilities {
 		throw new SimpleSAML_Error_Error($errorCode, $e);
 	}
 
-
 	/**
 	 * Check whether an IP address is part of an CIDR.
 	 */
 	static function ipCIDRcheck($cidr, $ip = null) {
-		if ($ip == null) $ip = $_SERVER['REMOTE_ADDR'];
-		list ($net, $mask) = explode('/', $cidr);
+		if ($ip == null) {
+			$ip = $_SERVER['REMOTE_ADDR'];
+		}
+
+		list($net, $mask) = explode('/', $cidr);
 
 		if (strstr($ip, ':') || strstr($net, ':')) {
 			// Validate IPv6 with inet_pton, convert to hex with bin2hex
@@ -524,21 +516,21 @@ class SimpleSAML_Utilities {
 				return false;
 			}
 
-			$ip_ip = str_split(bin2hex($ip_pack),8);
+			$ip_ip = str_split(bin2hex($ip_pack), 8);
 			foreach ($ip_ip as &$value) {
 				$value = hexdec($value);
 			}
 
-			$ip_net = str_split(bin2hex($net_pack),8);
+			$ip_net = str_split(bin2hex($net_pack), 8);
 			foreach ($ip_net as &$value) {
 				$value = hexdec($value);
 			}
 		} else {
-			$ip_ip[0] = ip2long ($ip);
-			$ip_net[0] = ip2long ($net);
+			$ip_ip[0] = ip2long($ip);
+			$ip_net[0] = ip2long($net);
 		}
 
-		for($i = 0; $mask > 0 && $i < sizeof($ip_ip); $i++) {
+		for ($i = 0; $mask > 0 && $i < sizeof($ip_ip); $i++) {
 			if ($mask > 32) {
 				$iteration_mask = 32;
 			} else {
@@ -551,8 +543,10 @@ class SimpleSAML_Utilities {
 			$ip_net_mask = $ip_net[$i] & $ip_mask;
 			$ip_ip_mask = $ip_ip[$i] & $ip_mask;
 
-			if ($ip_ip_mask != $ip_net_mask)
+			if ($ip_ip_mask != $ip_net_mask) {
 				return false;
+			}
+
 		}
 		return true;
 	}
@@ -591,7 +585,7 @@ class SimpleSAML_Utilities {
 		/* Show a minimal web page with a clickable link to the URL. */
 		echo '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
 		echo '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"' .
-			' "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">' . "\n";
+		' "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">' . "\n";
 		echo '<html xmlns="http://www.w3.org/1999/xhtml">';
 		echo '<head>
 					<meta http-equiv="content-type" content="text/html; charset=utf-8">
@@ -602,7 +596,7 @@ class SimpleSAML_Utilities {
 		echo '<p>';
 		echo 'You were redirected to: ';
 		echo '<a id="redirlink" href="' .
-			htmlspecialchars($url) . '">' . htmlspecialchars($url) . '</a>';
+		htmlspecialchars($url) . '">' . htmlspecialchars($url) . '</a>';
 		echo '<script type="text/javascript">document.getElementById("redirlink").focus();</script>';
 		echo '</p>';
 		echo '</body>';
@@ -610,8 +604,7 @@ class SimpleSAML_Utilities {
 
 		/* End script execution. */
 		exit;
-	} 
-
+	}
 
 	/**
 	 * This function redirects the user to the specified address.
@@ -632,7 +625,7 @@ class SimpleSAML_Utilities {
 	 * array index. The value of the parameter is the value stored in the index.
 	 * Both the name and the value will be urlencoded. If the value is NULL,
 	 * then the parameter will be encoded as just the name, without a value.
- 	 * @param string[] $allowed_redirect_hosts An array with a whitelist of
+	 * @param string[] $allowed_redirect_hosts An array with a whitelist of
 	 * hosts for which redirects are allowed. If NULL, redirections will be
 	 * allowed to any host. Otherwise, the host of the $url provided must be
 	 * present in this parameter. If the host is not whitelisted, an exception
@@ -645,7 +638,7 @@ class SimpleSAML_Utilities {
 	 */
 	public static function redirect($url, $parameters = array(),
 		$allowed_redirect_hosts = NULL) {
-		
+
 		assert(is_string($url));
 		assert(strlen($url) > 0);
 		assert(is_array($parameters));
@@ -698,7 +691,7 @@ class SimpleSAML_Utilities {
 	 * trusted, an exception will be thrown.
 	 *
 	 * See the redirectTrustedURL function for more details.
-	 * 
+	 *
 	 * @return void This function never returns.
 	 */
 	public static function redirectUntrustedURL($url, $parameters = array()) {
@@ -718,11 +711,11 @@ class SimpleSAML_Utilities {
 
 		$ret = array();
 
-		foreach($in as $k1 => $a2) {
+		foreach ($in as $k1 => $a2) {
 			assert('is_array($a2)');
 
-			foreach($a2 as $k2 => $v) {
-				if(!array_key_exists($k2, $ret)) {
+			foreach ($a2 as $k2 => $v) {
+				if (!array_key_exists($k2, $ret)) {
 					$ret[$k2] = array();
 				}
 
@@ -732,7 +725,6 @@ class SimpleSAML_Utilities {
 
 		return $ret;
 	}
-
 
 	/**
 	 * This function checks if the DOMElement has the correct localName and namespaceURI.
@@ -762,7 +754,7 @@ class SimpleSAML_Utilities {
 		}
 
 		/* Check if the namespace is a shortcut, and expand it if it is. */
-		if($nsURI[0] == '@') {
+		if ($nsURI[0] == '@') {
 
 			/* The defined shortcuts. */
 			$shortcuts = array(
@@ -774,10 +766,10 @@ class SimpleSAML_Utilities {
 				'@saml2' => 'urn:oasis:names:tc:SAML:2.0:assertion',
 				'@saml2p' => 'urn:oasis:names:tc:SAML:2.0:protocol',
 				'@shibmd' => 'urn:mace:shibboleth:metadata:1.0',
-				);
+			);
 
 			/* Check if it is a valid shortcut. */
-			if(!array_key_exists($nsURI, $shortcuts)) {
+			if (!array_key_exists($nsURI, $shortcuts)) {
 				throw new Exception('Unknown namespace shortcut: ' . $nsURI);
 			}
 
@@ -785,18 +777,16 @@ class SimpleSAML_Utilities {
 			$nsURI = $shortcuts[$nsURI];
 		}
 
-
-		if($element->localName !== $name) {
+		if ($element->localName !== $name) {
 			return FALSE;
 		}
 
-		if($element->namespaceURI !== $nsURI) {
+		if ($element->namespaceURI !== $nsURI) {
 			return FALSE;
 		}
 
 		return TRUE;
 	}
-
 
 	/**
 	 * This function finds direct descendants of a DOM element with the specified
@@ -816,22 +806,21 @@ class SimpleSAML_Utilities {
 
 		$ret = array();
 
-		for($i = 0; $i < $element->childNodes->length; $i++) {
+		for ($i = 0; $i < $element->childNodes->length; $i++) {
 			$child = $element->childNodes->item($i);
 
 			/* Skip text nodes and comment elements. */
-			if($child instanceof DOMText || $child instanceof DOMComment) {
+			if ($child instanceof DOMText || $child instanceof DOMComment) {
 				continue;
 			}
 
-			if(self::isDOMElementOfType($child, $localName, $namespaceURI) === TRUE) {
+			if (self::isDOMElementOfType($child, $localName, $namespaceURI) === TRUE) {
 				$ret[] = $child;
 			}
 		}
 
 		return $ret;
 	}
-
 
 	/**
 	 * This function extracts the text from DOMElements which should contain
@@ -845,9 +834,9 @@ class SimpleSAML_Utilities {
 
 		$txt = '';
 
-		for($i = 0; $i < $element->childNodes->length; $i++) {
+		for ($i = 0; $i < $element->childNodes->length; $i++) {
 			$child = $element->childNodes->item($i);
-			if(!($child instanceof DOMText)) {
+			if (!($child instanceof DOMText)) {
 				throw new Exception($element->localName . ' contained a non-text child node.');
 			}
 
@@ -857,7 +846,6 @@ class SimpleSAML_Utilities {
 		$txt = trim($txt);
 		return $txt;
 	}
-
 
 	/**
 	 * This function parses the Accept-Language http header and returns an associative array with each
@@ -872,7 +860,7 @@ class SimpleSAML_Utilities {
 	 */
 	public static function getAcceptLanguage() {
 
-		if(!array_key_exists('HTTP_ACCEPT_LANGUAGE', $_SERVER)) {
+		if (!array_key_exists('HTTP_ACCEPT_LANGUAGE', $_SERVER)) {
 			/* No Accept-Language header - return empty set. */
 			return array();
 		}
@@ -881,7 +869,7 @@ class SimpleSAML_Utilities {
 
 		$ret = array();
 
-		foreach($languages as $l) {
+		foreach ($languages as $l) {
 			$opts = explode(';', $l);
 
 			$l = trim(array_shift($opts)); /* The language is the first element.*/
@@ -889,9 +877,9 @@ class SimpleSAML_Utilities {
 			$q = 1.0;
 
 			/* Iterate over all options, and check for the quality option. */
-			foreach($opts as $o) {
+			foreach ($opts as $o) {
 				$o = explode('=', $o);
-				if(count($o) < 2) {
+				if (count($o) < 2) {
 					/* Skip option with no value. */
 					continue;
 				}
@@ -899,8 +887,8 @@ class SimpleSAML_Utilities {
 				$name = trim($o[0]);
 				$value = trim($o[1]);
 
-				if($name === 'q') {
-					$q = (float)$value;
+				if ($name === 'q') {
+					$q = (float) $value;
 				}
 			}
 
@@ -910,7 +898,7 @@ class SimpleSAML_Utilities {
 			/* Set the quality in the result. */
 			$ret[$l] = $q;
 
-			if(strpos($l, '-')) {
+			if (strpos($l, '-')) {
 				/* The language includes a region part. */
 
 				/* Extract the language without the region. */
@@ -918,7 +906,7 @@ class SimpleSAML_Utilities {
 				$l = $l[0];
 
 				/* Add this language to the result (unless it is defined already). */
-				if(!array_key_exists($l, $ret)) {
+				if (!array_key_exists($l, $ret)) {
 					$ret[$l] = $q;
 				}
 			}
@@ -926,7 +914,6 @@ class SimpleSAML_Utilities {
 
 		return $ret;
 	}
-
 
 	/**
 	 * This function attempts to validate an XML string against the specified schema.
@@ -945,7 +932,7 @@ class SimpleSAML_Utilities {
 
 		SimpleSAML_XML_Errors::begin();
 
-		if($xml instanceof DOMDocument) {
+		if ($xml instanceof DOMDocument) {
 			$dom = $xml;
 			$res = TRUE;
 		} else {
@@ -953,14 +940,14 @@ class SimpleSAML_Utilities {
 			$res = $dom->loadXML($xml);
 		}
 
-		if($res) {
+		if ($res) {
 
 			$config = SimpleSAML_Configuration::getInstance();
 			$schemaPath = $config->resolvePath('schemas') . '/';
 			$schemaFile = $schemaPath . $schema;
 
 			$res = $dom->schemaValidate($schemaFile);
-			if($res) {
+			if ($res) {
 				SimpleSAML_XML_Errors::end();
 				return '';
 			}
@@ -976,7 +963,6 @@ class SimpleSAML_Utilities {
 		return $errorText;
 	}
 
-
 	/**
 	 * This function performs some sanity checks on XML documents, and optionally validates them
 	 * against their schema. A warning will be printed to the log if validation fails.
@@ -990,77 +976,74 @@ class SimpleSAML_Utilities {
 		assert($type === 'saml11' || $type === 'saml20' || $type === 'saml-meta');
 
 		/* A SAML message should not contain a doctype-declaration. */
-		if(strpos($message, '<!DOCTYPE') !== FALSE) {
+		if (strpos($message, '<!DOCTYPE') !== FALSE) {
 			throw new Exception('XML contained a doctype declaration.');
 		}
 
 		$enabled = SimpleSAML_Configuration::getInstance()->getBoolean('debug.validatexml', NULL);
-		if($enabled === NULL) {
+		if ($enabled === NULL) {
 			/* Fall back to old configuration option. */
 			$enabled = SimpleSAML_Configuration::getInstance()->getBoolean('debug.validatesamlmessages', NULL);
-			if($enabled === NULL) {
+			if ($enabled === NULL) {
 				/* Fall back to even older configuration option. */
 				$enabled = SimpleSAML_Configuration::getInstance()->getBoolean('debug.validatesaml2messages', FALSE);
 			}
 		}
 
-		if(!$enabled) {
+		if (!$enabled) {
 			return;
 		}
 
-		switch($type) {
-		case 'saml11':
-			$result = self::validateXML($message, 'oasis-sstc-saml-schema-protocol-1.1.xsd');
-			break;
-		case 'saml20':
-			$result = self::validateXML($message, 'saml-schema-protocol-2.0.xsd');
-			break;
-		case 'saml-meta':
-			$result = self::validateXML($message, 'saml-schema-metadata-2.0.xsd');
-			break;
-		default:
-			throw new Exception('Invalid message type.');
+		switch ($type) {
+			case 'saml11':
+				$result = self::validateXML($message, 'oasis-sstc-saml-schema-protocol-1.1.xsd');
+				break;
+			case 'saml20':
+				$result = self::validateXML($message, 'saml-schema-protocol-2.0.xsd');
+				break;
+			case 'saml-meta':
+				$result = self::validateXML($message, 'saml-schema-metadata-2.0.xsd');
+				break;
+			default:
+				throw new Exception('Invalid message type.');
 		}
 
-		if($result !== '') {
+		if ($result !== '') {
 			SimpleSAML_Logger::warning($result);
 		}
 	}
 
+	/**
+	 * @deprecated
+	 * @param int $length The amount of random bytes to generate.
+	 * @return string A string of $length random bytes.
+	 */
+	public static function generateRandomBytesMTrand($length) {
 
-    /**
-     * @deprecated
-     * @param int $length The amount of random bytes to generate.
-     * @return string A string of $length random bytes.
-     */
-    public static function generateRandomBytesMTrand($length) {
-	
 		/* Use mt_rand to generate $length random bytes. */
 		$data = '';
-		for($i = 0; $i < $length; $i++) {
+		for ($i = 0; $i < $length; $i++) {
 			$data .= chr(mt_rand(0, 255));
 		}
 
 		return $data;
 	}
 
-
 	/**
 	 * This function generates a binary string containing random bytes.
 	 *
 	 * It is implemented as a wrapper of the openssl_random_pseudo_bytes function,
-     * available since PHP 5.3.0.
+	 * available since PHP 5.3.0.
 	 *
 	 * @param int $length The number of random bytes to return.
-     * @param boolean $fallback Deprecated.
+	 * @param boolean $fallback Deprecated.
 	 * @return string A string of $length random bytes.
 	 */
 	public static function generateRandomBytes($length, $fallback = TRUE) {
 		assert('is_int($length)');
 
-        return openssl_random_pseudo_bytes($length);
+		return openssl_random_pseudo_bytes($length);
 	}
-
 
 	/**
 	 * This function converts a binary string to hexadecimal characters.
@@ -1070,12 +1053,11 @@ class SimpleSAML_Utilities {
 	 */
 	public static function stringToHex($bytes) {
 		$ret = '';
-		for($i = 0; $i < strlen($bytes); $i++) {
+		for ($i = 0; $i < strlen($bytes); $i++) {
 			$ret .= sprintf('%02x', ord($bytes[$i]));
 		}
 		return $ret;
 	}
-
 
 	/**
 	 * Resolve a (possibly) relative path from the given base path.
@@ -1089,18 +1071,18 @@ class SimpleSAML_Utilities {
 	 * @return An absolute path referring to $path.
 	 */
 	public static function resolvePath($path, $base = NULL) {
-		if($base === NULL) {
+		if ($base === NULL) {
 			$config = SimpleSAML_Configuration::getInstance();
-			$base =  $config->getBaseDir();
+			$base = $config->getBaseDir();
 		}
 
 		/* Remove trailing slashes from $base. */
-		while(substr($base, -1) === '/') {
+		while (substr($base, -1) === '/') {
 			$base = substr($base, 0, -1);
 		}
 
 		/* Check for absolute path. */
-		if(substr($path, 0, 1) === '/') {
+		if (substr($path, 0, 1) === '/') {
 			/* Absolute path. */
 			$ret = '/';
 		} else {
@@ -1109,13 +1091,13 @@ class SimpleSAML_Utilities {
 		}
 
 		$path = explode('/', $path);
-		foreach($path as $d) {
-			if($d === '.') {
+		foreach ($path as $d) {
+			if ($d === '.') {
 				continue;
-			} elseif($d === '..') {
+			} elseif ($d === '..') {
 				$ret = dirname($ret);
 			} else {
-				if(substr($ret, -1) !== '/') {
+				if (substr($ret, -1) !== '/') {
 					$ret .= '/';
 				}
 				$ret .= $d;
@@ -1124,7 +1106,6 @@ class SimpleSAML_Utilities {
 
 		return $ret;
 	}
-
 
 	/**
 	 * Resolve a (possibly) relative URL relative to a given base URL.
@@ -1142,11 +1123,11 @@ class SimpleSAML_Utilities {
 	 * @return An absolute URL for the given relative URL.
 	 */
 	public static function resolveURL($url, $base = NULL) {
-		if($base === NULL) {
+		if ($base === NULL) {
 			$base = self::getBaseURL();
 		}
 
-		if(!preg_match('/^((((\w+:)\/\/[^\/]+)(\/[^?#]*))(?:\?[^#]*)?)(?:#.*)?/', $base, $baseParsed)) {
+		if (!preg_match('/^((((\w+:)\/\/[^\/]+)(\/[^?#]*))(?:\?[^#]*)?)(?:#.*)?/', $base, $baseParsed)) {
 			throw new Exception('Unable to parse base url: ' . $base);
 		}
 
@@ -1156,38 +1137,37 @@ class SimpleSAML_Utilities {
 		$basePath = $baseParsed[2];
 		$baseQuery = $baseParsed[1];
 
-		if(preg_match('$^\w+:$', $url)) {
+		if (preg_match('$^\w+:$', $url)) {
 			return $url;
 		}
 
-		if(substr($url, 0, 2) === '//') {
+		if (substr($url, 0, 2) === '//') {
 			return $baseScheme . $url;
 		}
 
 		$firstChar = substr($url, 0, 1);
 
-		if($firstChar === '/') {
+		if ($firstChar === '/') {
 			return $baseHost . $url;
 		}
 
-		if($firstChar === '?') {
+		if ($firstChar === '?') {
 			return $basePath . $url;
 		}
 
-		if($firstChar === '#') {
+		if ($firstChar === '#') {
 			return $baseQuery . $url;
 		}
-
 
 		/* We have a relative path. Remove query string/fragment and save it as $tail. */
 		$queryPos = strpos($url, '?');
 		$fragmentPos = strpos($url, '#');
-		if($queryPos !== FALSE || $fragmentPos !== FALSE) {
-			if($queryPos === FALSE) {
+		if ($queryPos !== FALSE || $fragmentPos !== FALSE) {
+			if ($queryPos === FALSE) {
 				$tailPos = $fragmentPos;
-			} elseif($fragmentPos === FALSE) {
+			} elseif ($fragmentPos === FALSE) {
 				$tailPos = $queryPos;
-			} elseif($queryPos < $fragmentPos) {
+			} elseif ($queryPos < $fragmentPos) {
 				$tailPos = $queryPos;
 			} else {
 				$tailPos = $fragmentPos;
@@ -1204,7 +1184,6 @@ class SimpleSAML_Utilities {
 
 		return $baseHost . $dir . $tail;
 	}
-
 
 	/**
 	 * Normalizes a URL to an absolute URL and validate it.
@@ -1228,7 +1207,6 @@ class SimpleSAML_Utilities {
 		return $url;
 	}
 
-
 	/**
 	 * Parse a query string into an array.
 	 *
@@ -1244,10 +1222,10 @@ class SimpleSAML_Utilities {
 		assert('is_string($query_string)');
 
 		$res = array();
-		foreach(explode('&', $query_string) as $param) {
+		foreach (explode('&', $query_string) as $param) {
 			$param = explode('=', $param);
 			$name = urldecode($param[0]);
-			if(count($param) === 1) {
+			if (count($param) === 1) {
 				$value = '';
 			} else {
 				$value = urldecode($param[1]);
@@ -1258,7 +1236,6 @@ class SimpleSAML_Utilities {
 
 		return $res;
 	}
-
 
 	/**
 	 * Parse and validate an array with attributes.
@@ -1300,7 +1277,6 @@ class SimpleSAML_Utilities {
 		return $newAttrs;
 	}
 
-
 	/**
 	 * Retrieve secret salt.
 	 *
@@ -1319,12 +1295,11 @@ class SimpleSAML_Utilities {
 		$secretSalt = SimpleSAML_Configuration::getInstance()->getString('secretsalt');
 		if ($secretSalt === 'defaultsecretsalt') {
 			throw new Exception('The "secretsalt" configuration option must be set to a secret' .
-			                    ' value.');
+				' value.');
 		}
 
 		return $secretSalt;
 	}
-
 
 	/**
 	 * Retrieve last error message.
@@ -1349,7 +1324,6 @@ class SimpleSAML_Utilities {
 		return $error['message'];
 	}
 
-
 	/**
 	 * Resolves a path that may be relative to the cert-directory.
 	 *
@@ -1363,7 +1337,6 @@ class SimpleSAML_Utilities {
 		$base = $globalConfig->getPathValue('certdir', 'cert/');
 		return SimpleSAML_Utilities::resolvePath($path, $base);
 	}
-
 
 	/**
 	 * Get public key or certificate from metadata.
@@ -1407,8 +1380,8 @@ class SimpleSAML_Utilities {
 				}
 				$certData = $key['X509Certificate'];
 				$pem = "-----BEGIN CERTIFICATE-----\n" .
-					chunk_split($certData, 64) .
-					"-----END CERTIFICATE-----\n";
+				chunk_split($certData, 64) .
+				"-----END CERTIFICATE-----\n";
 				$certFingerprint = strtolower(sha1(base64_decode($certData)));
 
 				return array(
@@ -1423,7 +1396,7 @@ class SimpleSAML_Utilities {
 			$fps = $metadata->getArrayizeString($prefix . 'certFingerprint');
 
 			/* Normalize fingerprint(s) - lowercase and no colons. */
-			foreach($fps as &$fp) {
+			foreach ($fps as &$fp) {
 				assert('is_string($fp)');
 				$fp = strtolower(str_replace(':', '', $fp));
 			}
@@ -1441,7 +1414,6 @@ class SimpleSAML_Utilities {
 			return NULL;
 		}
 	}
-
 
 	/**
 	 * Load private key from metadata.
@@ -1493,7 +1465,6 @@ class SimpleSAML_Utilities {
 		return $ret;
 	}
 
-
 	/**
 	 * Format a DOM element.
 	 *
@@ -1514,7 +1485,7 @@ class SimpleSAML_Utilities {
 		for ($i = 0; $i < $root->childNodes->length; $i++) {
 			$child = $root->childNodes->item($i);
 
-			if($child instanceof DOMText) {
+			if ($child instanceof DOMText) {
 				$textNodes[] = $child;
 				$fullText .= $child->wholeText;
 
@@ -1577,7 +1548,6 @@ class SimpleSAML_Utilities {
 		$root->appendChild(new DOMText("\n" . $indentBase));
 	}
 
-
 	/**
 	 * Format an XML string.
 	 *
@@ -1614,7 +1584,6 @@ class SimpleSAML_Utilities {
 		}
 	}
 
-
 	/**
 	 * Check whether the current user is a admin user.
 	 *
@@ -1626,7 +1595,6 @@ class SimpleSAML_Utilities {
 
 		return $session->isValid('admin') || $session->isValid('login-admin');
 	}
-
 
 	/**
 	 * Retrieve a admin login URL.
@@ -1643,7 +1611,6 @@ class SimpleSAML_Utilities {
 
 		return SimpleSAML_Module::getModuleURL('core/login-admin.php', array('ReturnTo' => $returnTo));
 	}
-
 
 	/**
 	 * Require admin access for current page.
@@ -1670,10 +1637,9 @@ class SimpleSAML_Utilities {
 			$config = SimpleSAML_Configuration::getInstance();
 			self::redirectTrustedURL('/' . $config->getBaseURL() . 'auth/login-admin.php',
 				array('RelayState' => $returnTo)
-						       );
+			);
 		}
 	}
-
 
 	/**
 	 * Do a POST redirect to a page.
@@ -1735,7 +1701,6 @@ class SimpleSAML_Utilities {
 		return $url;
 	}
 
-
 	/**
 	 * Create a link which will POST data to HTTP in a secure way.
 	 *
@@ -1764,7 +1729,6 @@ class SimpleSAML_Utilities {
 		return $url;
 	}
 
-
 	/**
 	 * Validate a certificate against a CA file, by using the builtin
 	 * openssl_x509_checkpurpose function
@@ -1779,23 +1743,22 @@ class SimpleSAML_Utilities {
 		assert('is_string($caFile)');
 
 		/* Clear openssl errors. */
-		while(openssl_error_string() !== FALSE);
+		while (openssl_error_string() !== FALSE);
 
 		$res = openssl_x509_checkpurpose($certificate, X509_PURPOSE_ANY, array($caFile));
 
 		$errors = '';
 		/* Log errors. */
-		while( ($error = openssl_error_string()) !== FALSE) {
+		while (($error = openssl_error_string()) !== FALSE) {
 			$errors .= ' [' . $error . ']';
 		}
 
-		if($res !== TRUE) {
+		if ($res !== TRUE) {
 			return $errors;
 		}
 
 		return TRUE;
 	}
-
 
 	/**
 	 * Validate the certificate used to sign the XML against a CA file, by using the "openssl verify" command.
@@ -1817,10 +1780,10 @@ class SimpleSAML_Utilities {
 			'openssl', 'verify',
 			'-CAfile', $caFile,
 			'-purpose', 'any',
-			);
+		);
 
 		$cmdline = '';
-		foreach($command as $c) {
+		foreach ($command as $c) {
 			$cmdline .= escapeshellarg($c) . ' ';
 		}
 
@@ -1828,7 +1791,7 @@ class SimpleSAML_Utilities {
 		$descSpec = array(
 			0 => array('pipe', 'r'),
 			1 => array('pipe', 'w'),
-			);
+		);
 		$process = proc_open($cmdline, $descSpec, $pipes);
 		if (!is_resource($process)) {
 			throw new Exception('Failed to execute verification command: ' . $cmdline);
@@ -1842,7 +1805,7 @@ class SimpleSAML_Utilities {
 		$out = '';
 		while (!feof($pipes[1])) {
 			$line = trim(fgets($pipes[1]));
-			if(strlen($line) > 0) {
+			if (strlen($line) > 0) {
 				$out .= ' [' . $line . ']';
 			}
 		}
@@ -1855,7 +1818,6 @@ class SimpleSAML_Utilities {
 
 		return TRUE;
 	}
-
 
 	/**
 	 * Validate the certificate used to sign the XML against a CA file.
@@ -1891,7 +1853,6 @@ class SimpleSAML_Utilities {
 
 		SimpleSAML_Logger::debug('Successfully validated certificate.');
 	}
-
 
 	/**
 	 * Initialize the timezone.
@@ -1937,7 +1898,6 @@ class SimpleSAML_Utilities {
 		date_default_timezone_set($serverTimezone);
 	}
 
-
 	/**
 	 * Atomically write a file.
 	 *
@@ -1948,7 +1908,7 @@ class SimpleSAML_Utilities {
 	 * @param string $filename  The name of the file.
 	 * @param string $data  The data we should write to the file.
 	 */
-	public static function writeFile($filename, $data, $mode=0600) {
+	public static function writeFile($filename, $data, $mode = 0600) {
 		assert('is_string($filename)');
 		assert('is_string($data)');
 		assert('is_numeric($mode)');
@@ -1977,7 +1937,6 @@ class SimpleSAML_Utilities {
 				$filename . ': ' . SimpleSAML_Utilities::getLastError());
 		}
 	}
-
 
 	/**
 	 * Get temp directory path.
@@ -2016,7 +1975,6 @@ class SimpleSAML_Utilities {
 		return $tempDir;
 	}
 
-
 	/**
 	 * Disable reporting of the given log levels.
 	 *
@@ -2035,7 +1993,6 @@ class SimpleSAML_Utilities {
 		self::$logMask |= $mask;
 	}
 
-
 	/**
 	 * Pop an error mask.
 	 *
@@ -2047,7 +2004,6 @@ class SimpleSAML_Utilities {
 		error_reporting($lastMask[0]);
 		self::$logMask = $lastMask[1];
 	}
-
 
 	/**
 	 * Find the default endpoint in an endpoint array.
@@ -2099,7 +2055,6 @@ class SimpleSAML_Utilities {
 		return $firstAllowed;
 	}
 
-
 	/**
 	 * Check for session cookie, and show missing-cookie page if it is missing.
 	 *
@@ -2122,7 +2077,6 @@ class SimpleSAML_Utilities {
 		self::redirectTrustedURL($url);
 	}
 
-
 	/**
 	 * Helper function to log messages that we send or receive.
 	 *
@@ -2143,20 +2097,20 @@ class SimpleSAML_Utilities {
 		}
 
 		switch ($type) {
-		case 'in':
-			SimpleSAML_Logger::debug('Received message:');
-			break;
-		case 'out':
-			SimpleSAML_Logger::debug('Sending message:');
-			break;
-		case 'decrypt':
-			SimpleSAML_Logger::debug('Decrypted message:');
-			break;
-		case 'encrypt':
-			SimpleSAML_Logger::debug('Encrypted message:');
-			break;
-		default:
-			assert(FALSE);
+			case 'in':
+				SimpleSAML_Logger::debug('Received message:');
+				break;
+			case 'out':
+				SimpleSAML_Logger::debug('Sending message:');
+				break;
+			case 'decrypt':
+				SimpleSAML_Logger::debug('Decrypted message:');
+				break;
+			case 'encrypt':
+				SimpleSAML_Logger::debug('Encrypted message:');
+				break;
+			default:
+				assert(FALSE);
 		}
 
 		$str = self::formatXMLString($message);
@@ -2164,7 +2118,6 @@ class SimpleSAML_Utilities {
 			SimpleSAML_Logger::debug($line);
 		}
 	}
-
 
 	/**
 	 * Helper function to retrieve a file or URL with proxy support.
@@ -2207,9 +2160,8 @@ class SimpleSAML_Utilities {
 					$context['ssl'] = array(
 						'SNI_server_name' => $hostname,
 						'SNI_enabled' => TRUE,
-						);
-				}
-				else {
+					);
+				} else {
 					SimpleSAML_Logger::warning('Invalid URL format or local URL used through a proxy');
 				}
 			}
@@ -2227,14 +2179,14 @@ class SimpleSAML_Utilities {
 
 			if (isset($http_response_header)) {
 				$headers = array();
-				foreach($http_response_header as $h) {
-					if(preg_match('@^HTTP/1\.[01]\s+\d{3}\s+@', $h)) {
+				foreach ($http_response_header as $h) {
+					if (preg_match('@^HTTP/1\.[01]\s+\d{3}\s+@', $h)) {
 						$headers = array(); // reset
 						$headers[0] = $h;
 						continue;
 					}
 					$bits = explode(':', $h, 2);
-					if(count($bits) === 2) {
+					if (count($bits) === 2) {
 						$headers[strtolower($bits[0])] = trim($bits[1]);
 					}
 				}
@@ -2248,7 +2200,6 @@ class SimpleSAML_Utilities {
 
 		return $data;
 	}
-
 
 	/**
 	 * Function to AES encrypt data.
@@ -2283,7 +2234,6 @@ class SimpleSAML_Utilities {
 
 		return $iv . $data;
 	}
-
 
 	/**
 	 * Function to AES decrypt data.
@@ -2320,16 +2270,14 @@ class SimpleSAML_Utilities {
 		return $clear;
 	}
 
-
 	/**
 	 * This function checks if we are running on Windows OS.
 	 *
 	 * @return TRUE if we are on Windows OS, FALSE otherwise.
 	 */
 	public static function isWindowsOS() {
-		return substr(strtoupper(PHP_OS),0,3) == 'WIN';
+		return substr(strtoupper(PHP_OS), 0, 3) == 'WIN';
 	}
-
 
 	/**
 	 * Set a cookie.
@@ -2366,7 +2314,7 @@ class SimpleSAML_Utilities {
 		}
 
 		if ($value === NULL) {
-			$expire = time() - 365*24*60*60;
+			$expire = time() - 365 * 24 * 60 * 60;
 		} elseif (isset($params['expire'])) {
 			$expire = $params['expire'];
 		} elseif ($params['lifetime'] === 0) {

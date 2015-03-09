@@ -86,20 +86,27 @@ class sspmod_cas_Auth_Source_CAS extends SimpleSAML_Auth_Source {
 	 * @return list username and attributes
 	 */
 	private function casValidate($ticket, $service) {
-		echo "validating simply";
+		//echo "validating simply";
 		$url = SimpleSAML_Utilities::addURLparameter($this->_casConfig['validate'], array(
 			'uip_ticket' => $ticket,
 			'service' => $service,
 		));
+
+		//print_r($url);
+
 		$result = SimpleSAML_Utilities::fetch($url);
+		//print_r($result);
 		$res = preg_split("/\r?\n/", $result);
+
 		if (strlen(strstr($res[0], "hawkid")) > 0) {
 			$attributes['hawkid'][0] = str_replace('hawkid=', '', $res[0]);
-			//if (strcmp($res[0], "hawkid")) {
-			return array($res[0], $attributes);
-		} else {
-			throw new Exception("Failed to validate CAS service ticket: $ticket");
+			if (strcmp($res[0], "hawkid")) {
+				return array($res[0], $attributes);
+			} else {
+				throw new Exception("Failed to validate CAS service ticket: $ticket");
+			}
 		}
+
 	}
 
 	/**
