@@ -97,11 +97,12 @@ class sspmod_cas_Auth_Source_CAS extends SimpleSAML_Auth_Source {
 		$result = SimpleSAML_Utilities::fetch($url);
 		//print_r($result);
 		$res = preg_split("/\r?\n/", $result);
-
+		//print_r('<p style="color: white">'.$res[0].'</p>');
 		if (strlen(strstr($res[0], "hawkid")) > 0) {
 			$attributes['hawkid'][0] = str_replace('hawkid=', '', $res[0]);
+			//print_r('<p style="color: white">'.$attributes['hawkid'][0].'</p>');
 			if (strcmp($res[0], "hawkid")) {
-				return array($res[0], $attributes);
+				return array($attributes['hawkid'][0], $attributes);
 			} else {
 				throw new Exception("Failed to validate CAS service ticket: $ticket");
 			}

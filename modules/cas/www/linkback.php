@@ -21,6 +21,7 @@ if (!is_null($sid['url'])) {
 
 $state = SimpleSAML_Auth_State::loadState($stateId, sspmod_cas_Auth_Source_CAS::STAGE_INIT);
 $state['cas:ticket'] = (string) $_GET['uip_ticket'];
+//print_r($state);
 
 /* Find authentication source. */
 assert('array_key_exists(sspmod_cas_Auth_Source_CAS::AUTHID, $state)');

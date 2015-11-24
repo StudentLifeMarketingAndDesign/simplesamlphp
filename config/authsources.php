@@ -23,11 +23,11 @@ $config = array(
 			'attributes' => 'hawkid',
 		),
 		'ldap' => array(
-			'servers' => null,
-			//'enable_tls' => false,
-			//'searchbase' => 'DC=iowa,DC=uiowa,DC=edu',
-			//'searchattributes' => 'uid',
-			//'attributes' => array('uid', 'cn'),
+			'servers' => 'ldap://directory.iowa.uiowa.edu:389',
+			'enable_tls' => false,
+			'searchbase' => 'OU=people,DC=metadirectory,DC=iowa,DC=uiowa,DC=edu',
+			'searchattributes' => 'uiowaHawkID',
+			'attributes' => array('uiowaHawkID', 'mail'),
 			//'priv_user_dn' => 'cn=simplesamlphp,ou=applications,dc=org,dc=com',
 			//'priv_user_pw' => 'password',
 
